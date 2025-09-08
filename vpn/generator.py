@@ -82,7 +82,7 @@ def make_amnezia_json(peer_priv, peer_pub, server_pub, preshared_key=None):
     }
     return json.dumps(cfg, indent=2)
 
-def main():
+def generation():
     ap = argparse.ArgumentParser(description="AmneziaWG client config generator")
     ap.add_argument("--wg", action="store_true", help="Выдать wg-quick вместо JSON")
     args = ap.parse_args()
@@ -91,9 +91,13 @@ def main():
     psk = base64.b64encode(os.urandom(32)).decode()   # можно заменить на фиксированный
 
     if args.wg:
+        with open(f'vpn/configs/config.conf', 'w', encoding='UTF=8') as f:
+            f.write(make_wg_quick(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk))
         print(make_wg_quick(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk))
     else:
+        with open(f'vpn/configs/config.conf', 'w', encoding='UTF=8') as f:
+            f.write(make_amnezia_json(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk))
         print(make_amnezia_json(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk))
 
 if __name__ == "__main__":
-    main()
+    generation()
