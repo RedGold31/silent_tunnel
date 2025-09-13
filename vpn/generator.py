@@ -127,13 +127,9 @@ def generation(wg: bool = False):
             ALLOWED_IPS=ALLOWED_IPS,
             SERVER_ENDPOINT=SERVER_ENDPOINT,
         )
-        with open("configs/config.conf", "w", encoding="UTF=8") as f:
-            f.write(render)
-        print(render)
+        return render
     else:
-        with open("configs/config.json", "w", encoding="UTF=8") as f:
-            f.write(make_amnezia_json(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk))
-        print(make_amnezia_json(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk))
+        return make_amnezia_json(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk)
 
 
 if __name__ == "__main__":
