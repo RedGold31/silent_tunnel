@@ -10,10 +10,11 @@ from ipaddress import IPv4Network  # помогает разобрать IP-ад
 
 load_dotenv()
 
+dynamic_ip = 0
 SERVER_ENDPOINT = os.getenv("SERVER_ENDPOINT")
 SERVER_PUBLIC_KEY = os.getenv("SERVER_PUBLIC_KEY")
 ALLOWED_IPS = os.getenv("ALLOWED_IPS")
-ADDRESS = os.getenv("ADDRESS")
+ADDRESS = f"10.8.1.{ dynamic_ip }/32"
 DNS = os.getenv("DNS")
 MTU = os.getenv("MTU")
 JUNK_PACKET_COUNT = os.getenv("JUNK_PACKET_COUNT")
@@ -26,6 +27,11 @@ RESPONSE_PACKET_MAGIC_HEADER = os.getenv("RESPONSE_PACKET_MAGIC_HEADER")
 UNDERLOAD_PACKET_MAGIC_HEADER = os.getenv("UNDERLOAD_PACKET_MAGIC_HEADER")
 TRANSPORT_PACKET_MAGIC_HEADER = os.getenv("TRANSPORT_PACKET_MAGIC_HEADER")
 
+def next_ip():
+    global dynamic_ip, ADDRESS
+    dynamic_ip += 1
+    ADDRESS = f"10.8.1.{ dynamic_ip }/32"
+    return ADDRESS
 
 def gen_keypair():
     """Возвращает (base64_private, base64_public)"""
@@ -103,10 +109,11 @@ def make_amnezia_json(peer_priv, peer_pub, server_pub, preshared_key=None):
 
 
 def generation(wg: bool = False):
+    next_ip()
     peer_priv, peer_pub = gen_keypair()
     psk = base64.b64encode(os.urandom(32)).decode()  # можно заменить на фиксированный
 
-    if wg:
+    if wg and dynamic_ip < 256:
         tmp = jinja2.Template(make_wg_quick())
         render = tmp.render(
             peer_priv=peer_priv,
@@ -127,6 +134,7 @@ def generation(wg: bool = False):
             ALLOWED_IPS=ALLOWED_IPS,
             SERVER_ENDPOINT=SERVER_ENDPOINT,
         )
+        print(render)
         return render
     else:
         return make_amnezia_json(peer_priv, peer_pub, SERVER_PUBLIC_KEY, psk)
